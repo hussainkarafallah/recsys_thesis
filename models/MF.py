@@ -34,13 +34,13 @@ class NewModel(GeneralRecommender):
         pos_item = interaction[self.ITEM_ID]
         neg_item = interaction[self.NEG_ITEM_ID]
 
-        user_e = self.user_embedding(user)                        # [batch_size, embedding_size]
-        pos_item_e = self.item_embedding(pos_item)                # [batch_size, embedding_size]
-        neg_item_e = self.item_embedding(neg_item)                # [batch_size, embedding_size]
-        pos_item_score = torch.mul(user_e, pos_item_e).sum(dim=1) # [batch_size]
-        neg_item_score = torch.mul(user_e, neg_item_e).sum(dim=1) # [batch_size]
+        user_e = self.user_embedding(user)
+        pos_item_e = self.item_embedding(pos_item)
+        neg_item_e = self.item_embedding(neg_item)
+        pos_item_score = torch.mul(user_e, pos_item_e).sum(dim=1)
+        neg_item_score = torch.mul(user_e, neg_item_e).sum(dim=1)
 
-        loss = self.loss(pos_item_score, neg_item_score)          # []
+        loss = self.loss(pos_item_score, neg_item_score)
 
         return loss
 
@@ -48,8 +48,8 @@ class NewModel(GeneralRecommender):
         user = interaction[self.USER_ID]
         item = interaction[self.ITEM_ID]
 
-        user_e = self.user_embedding(user)            # [batch_size, embedding_size]
-        item_e = self.item_embedding(item)            # [batch_size, embedding_size]
+        user_e = self.user_embedding(user)
+        item_e = self.item_embedding(item)
 
         scores = torch.mul(user_e, item_e).sum(dim=1) # [batch_size]
 
@@ -58,9 +58,9 @@ class NewModel(GeneralRecommender):
     def full_sort_predict(self, interaction):
         user = interaction[self.USER_ID]
 
-        user_e = self.user_embedding(user)                        # [batch_size, embedding_size]
-        all_item_e = self.item_embedding.weight                   # [n_items, batch_size]
+        user_e = self.user_embedding(user)
+        all_item_e = self.item_embedding.weight
 
-        scores = torch.matmul(user_e, all_item_e.transpose(0, 1)) # [batch_size, n_items]
+        scores = torch.matmul(user_e, all_item_e.transpose(0, 1))
 
         return scores

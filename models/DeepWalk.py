@@ -10,13 +10,17 @@ import random , logging , os
 
 class DeepWalk(GeneralRecommender):
     input_type = InputType.PAIRWISE
-
+    __name__ = 'DeepWalk'
+    default_params = {
+        'num_walks': 200,
+        'walk_length': 20,
+        'embeddings': 128,
+        'window': 5,
+        'learning_rate': 0.025,
+        'epochs': 1,
+    }
     def __init__(self, config, dataset):
         super(DeepWalk, self).__init__(config, dataset)
-
-        for log_name, log_obj in logging.Logger.manager.loggerDict.items():
-            if log_name != '<module name>':
-                log_obj.disabled = True
 
         self.num_users = dataset.num_users
         self.num_items = dataset.num_items
@@ -122,5 +126,8 @@ class DeepWalk(GeneralRecommender):
         user , item = self.embeddings[user] , self.embeddings[item]          # [batch_size, embedding_size]
         ret = th.mul(user , item).sum(dim = 1).squeeze()
         return ret.cpu()
+
+    def forward(self , *input , **kwargs):
+        pass
 
 

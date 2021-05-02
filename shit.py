@@ -1,18 +1,18 @@
 #%%
 
 from logging import getLogger
-from recbole.utils import init_seed
-from recbole.utils import init_logger
+from recbole.utils import init_seed , init_logger
 from training.static_trainer import StaticTrainer
 from recbole.config import Config
 from recbole.data import data_preparation , create_dataset
+from utils.data import add_graph
 import pandas as pd
 import commons
 
 #%%
 
 from models.StochasticGCMC import StochasticGCMC
-from utils.data import add_graph
+
 from models.DeepWalk import DeepWalk
 config_dict = {
     'num_walks' : 200,

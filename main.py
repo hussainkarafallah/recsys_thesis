@@ -1,7 +1,7 @@
 from logging import getLogger
 from recbole.utils import init_logger, init_seed
 from recbole.trainer import Trainer
-from models.baselines import NewModel
+from models.MF import NewModel
 from recbole.model.general_recommender import GCMC
 from recbole.config import Config
 from recbole.data import data_preparation
