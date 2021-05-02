@@ -34,10 +34,10 @@ class DeepWalk(GeneralRecommender):
         self.seed = commons.seed
         self.logger = logging.getLogger(commons.logger_name)
 
-
-        arghash = hash((self.num_walks , self.walk_length))
-        self.walks_file = os.path.join(commons.root_dir , "data/walks" , "deepwalk_{}.walks".format(arghash))
-        self.embeddings_file = os.path.join(commons.root_dir , "data/walks" , "deepwalk_{}".format(arghash))
+        walkhash = hash((self.num_walks , self.walk_length))
+        embeddinghash = hash((self.num_walks , self.walk_length , self.window_size))
+        self.walks_file = os.path.join(commons.root_dir , "data/walks" , "deepwalk_{}.walks".format(walkhash))
+        self.embeddings_file = os.path.join(commons.root_dir , "data/walks" , "deepwalk_{}".format(embeddinghash))
         if not os.path.exists(self.walks_file):
             self.logger.info("No cached walks were found, started generating.")
             self.generate_walks()
@@ -64,8 +64,8 @@ class DeepWalk(GeneralRecommender):
         assert g.is_homogeneous
 
         all_nodes = g.nodes().numpy().tolist() * self.num_walks
-        print(len(all_nodes))
         random.shuffle(all_nodes)
+
         queue = mp.JoinableQueue()
         per_worker = len(all_nodes) // commons.workers + 1
         ps = []
@@ -118,6 +118,7 @@ class DeepWalk(GeneralRecommender):
             np.save(self.embeddings_file , self._embedding)
 
         self.embeddings = thF.normalize(th.from_numpy(self._embedding) , p = 2 , dim = 1)
+        self.embeddings = th.nn.Parameter(self.embeddings , requires_grad=False)
 
     def predict(self, interaction):
         interaction = interaction.cpu()

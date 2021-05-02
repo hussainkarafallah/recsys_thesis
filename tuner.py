@@ -4,8 +4,7 @@ from recbole.utils import init_seed , init_logger
 from recbole.data import data_preparation , create_dataset
 from utils.data import add_graph
 import statics
-import traceback
-import argparse
+import argparse , traceback , json
 
 
 parser = argparse.ArgumentParser()
@@ -57,5 +56,8 @@ for subset in list(space):
         ret = run_trial(d)
     except Exception:
         traceback.print_exc()
-    print(d)
-    print(ret)
+        break
+    print("Current settings:")
+    print(json.dumps(d , indent=1))
+    print("Results:")
+    print(json.dumps(d, indent=1))
