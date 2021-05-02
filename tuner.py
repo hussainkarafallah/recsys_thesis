@@ -60,4 +60,4 @@ for subset in list(space):
     print("Current settings:")
     print(json.dumps(d , indent=1))
     print("Results:")
-    print(json.dumps(d, indent=1))
+    print(json.dumps(ret, indent=1))
