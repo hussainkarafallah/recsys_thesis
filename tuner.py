@@ -67,7 +67,7 @@ for subset in list(space):
     docs.append(d)
 
 hp_df = pandas.DataFrame.from_records(docs)
-csv_name = os.path.join(commons.tuning_results_dir , model_name , '_' , dataset_name , '.csv')
+csv_name = os.path.join(commons.tuning_results_dir , model_name + '_' + dataset_name + '.csv')
 hp_df.sort_values(by = [metric_name] , inplace=True , ascending=False)
 hp_df.to_csv(csv_name)
 
