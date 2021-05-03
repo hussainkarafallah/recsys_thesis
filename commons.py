@@ -12,7 +12,7 @@ np.random.seed(seed)
 torch.manual_seed(seed)
 torch.cuda.manual_seed(seed)
 
-workers = os.cpu_count() - 2
+workers = min(os.cpu_count() - 2 , 12)
 
 def seed_worker(worker_id):
     worker_seed = torch.initial_seed() % 2**32
