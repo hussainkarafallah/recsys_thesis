@@ -28,7 +28,7 @@ def run_trial(hp_config):
 
     config = Config(model=model_class, dataset=dataset_name, config_dict=default_config)
     init_seed(config['seed'], config['reproducibility'])
-    print(config)
+
     dataset = create_dataset(config)
     train_data, valid_data, test_data = data_preparation(config, dataset)
     train_data = add_graph(train_data)
@@ -54,7 +54,7 @@ space = product(*list(hp_dict.values()))
 entries = []
 
 docs = []
-
+metric_name = None
 for subset in list(space):
     d = OrderedDict(zip(keys , subset))
     try:
@@ -62,11 +62,12 @@ for subset in list(space):
     except Exception:
         traceback.print_exc()
         break
+    metric_name = ret['metric']
     d[ ret['metric'] ] = ret['test_result']
     docs.append(d)
 
 hp_df = pandas.DataFrame.from_records(docs)
 csv_name = os.path.join(commons.tuning_results_dir , model_name , '_' , dataset_name , '.csv')
-hp_df.sort_values(by = ['metric'] , inplace=True , ascending=False)
+hp_df.sort_values(by = [metric_name] , inplace=True , ascending=False)
 hp_df.to_csv(csv_name)
 
