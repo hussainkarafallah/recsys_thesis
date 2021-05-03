@@ -2,9 +2,6 @@ import random
 import numpy as np
 import torch
 import os
-import datetime
-from torch.utils.tensorboard import SummaryWriter
-import gensim
 
 seed = 2020
 random.seed(seed)
@@ -22,6 +19,9 @@ def seed_worker(worker_id):
 root_dir = os.path.dirname(os.path.realpath(__file__))
 cache_dir = os.path.join(root_dir , "cache")
 os.makedirs(cache_dir , exist_ok=True)
+
+tuning_results_dir = os.path.join(root_dir , 'tuning_results')
+os.makedirs(tuning_results_dir , exist_ok=True)
 
 head_log_dir = os.path.join(root_dir , "logs")
 os.makedirs(head_log_dir, exist_ok=True)
