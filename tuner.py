@@ -42,7 +42,7 @@ def run_trial(hp_config):
         'best_valid_score': best_valid_score,
         'valid_score_bigger': config['valid_metric_bigger'],
         'best_valid_result': best_valid_result,
-        'test_score': test_result[config['valid_metric']]
+        'test_score': test_result
     }
 
 
@@ -63,7 +63,7 @@ for subset in list(space):
         traceback.print_exc()
         break
     metric_name = ret['metric']
-    d[ ret['metric'] ] = ret['test_score']
+    d[ ret['metric'] ] = ret['best_valid_score']
     docs.append(d)
 
 hp_df = pandas.DataFrame.from_records(docs)
