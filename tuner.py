@@ -44,6 +44,7 @@ if __name__ == '__main__':
 
     for subset in list(space):
         params = OrderedDict(zip(keys , subset))
+        print(json.dumps(params, indent=1))
         container = Container(q, target=run_trial, args=(model_name,dataset_name) , kwargs={'hp_config' : params})
         container.start()
         container.join()
@@ -52,7 +53,7 @@ if __name__ == '__main__':
         metric_name = ret['metric']
         params[ ret['metric'] ] = ret['best_valid_score']
         docs.append(params)
-        print(json.dumps(params))
+
 
     hp_df = pandas.DataFrame.from_records(docs)
     csv_name = os.path.join(commons.tuning_results_dir , model_name + '_' + dataset_name + '.csv')

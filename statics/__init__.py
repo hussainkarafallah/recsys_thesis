@@ -7,7 +7,8 @@ recbole_models = {
     'Pop',
     'BPR',
     'GCMC',
-    'NGCF'
+    'NGCF',
+    'ItemKNN'
 }
 
 model_name_map = {
@@ -18,7 +19,8 @@ model_name_map = {
     'NGCF' : NGCF,
     'MF' : MF,
     'BPR' : BPR,
-    'Pop' : Pop
+    'Pop' : Pop,
+    'ItemKNN' : ItemKNN
 }
 
 trainers = {
