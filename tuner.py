@@ -40,7 +40,6 @@ if __name__ == '__main__':
     entries = []
 
     docs = []
-    metric_name = None
     q = multiprocessing.Queue()
 
     for subset in list(space):
@@ -51,8 +50,8 @@ if __name__ == '__main__':
         container.join()
         ret = q.get()
         container.terminate()
-        metric_name = ret['metric']
-        params[ ret['metric'] ] = ret['best_valid_score']
+        params['validation'] = ret['best_valid_score']
+        params['test'] = ret['test_score']
         docs.append(params)
 
 
@@ -61,7 +60,7 @@ if __name__ == '__main__':
         csv_name = os.path.join(commons.tuning_results_dir , model_name + '_' + dataset_name + '.csv')
     else:
         csv_name = args.out
-    hp_df.sort_values(by = [metric_name] , inplace=True , ascending=False)
+    hp_df.sort_values(by = ['validation'] , inplace=True , ascending=False)
     hp_df.to_csv(csv_name , index = False)
 
     #"""

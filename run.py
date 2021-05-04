@@ -59,12 +59,14 @@ def run_trial(model_name , dataset_name , hp_config = None):
         logger.info(set_color('best valid ', 'yellow') + f': {best_valid_result}')
         logger.info(set_color('test result', 'yellow') + f': {test_result}')
 
+    metric = str.lower(config['valid_metric'])
+
     return {
         'metric' : config['valid_metric'],
         'best_valid_score': best_valid_score,
         'valid_score_bigger': config['valid_metric_bigger'],
         'best_valid_result': best_valid_result,
-        'test_score': test_result
+        'test_score': test_result[metric]
     }
 
 if __name__ == '__main__':
