@@ -11,6 +11,6 @@
         "window" : [5 , 10],
         "dropout" : [0.2],
         "learning_rate" : [0.001 , 0.002 , 0.005],
-        "embeddings" : [128]
+        "embeddings" : [64 , 128]
     }
 }
