@@ -14,28 +14,43 @@ import commons
 class StochasticGCMC(GeneralRecommender):
 
     input_type = InputType.PAIRWISE
-
+    __name__ = 'S-GCMC'
+    default_params = {
+        'gcn_output_dim' : 500,
+        'embedding_size' : 64,
+        'node_dropout' : 0.2,
+        'dense_dropout' : 0.2,
+        'fans' : [None],
+        'train_batch_size' : 512,
+    }
     def __init__(self, config, dataset):
         super(StochasticGCMC, self).__init__(config, dataset)
+
+        # load parameters info
+        gcn_output_dim = config['gcn_output_dim']
+        embedding_size = config['embedding_size']
+        self.node_dropout = nn.Dropout(config['node_dropout'])
+        self.dense_dropout = nn.Dropout(config['dense_dropout'])
+        self.fans = config['fans']
+        self.num_layers = 1
 
         # load dataset info
         self.num_users = dataset.num_users
         self.num_items = dataset.num_items
         self.cpu_graph = dataset.graph
         self.cpu_graph.ndata['fts'] = th.eye(self.cpu_graph.num_nodes())
-        self.fans = config['fans']
+        self.check_point = th.zeros( (self.cpu_graph.number_of_nodes() , embedding_size)).to(commons.device)
+
+
         assert min(self.cpu_graph.in_degrees()) > 0
 
-        # load parameters info
-        self.layers_dim = config['layers']
-        self.num_layers = len(self.layers_dim)
         self.loss = nn.CrossEntropyLoss()
 
         # parameters initialization
-        self.W1 = nn.Linear(self.cpu_graph.num_nodes() , 512)
-        self.W2 = nn.Linear(self.cpu_graph.num_nodes() , 512)
-        self.W_glob = nn.Linear(512 , 75)
-        self.decoder = DenseBiDecoder(75 , 2)
+        self.W1 = nn.Linear(self.cpu_graph.num_nodes() , gcn_output_dim)
+        self.W2 = nn.Linear(self.cpu_graph.num_nodes() , gcn_output_dim)
+        self.W_glob = nn.Linear(gcn_output_dim , embedding_size)
+        self.decoder = DenseBiDecoder(embedding_size , 2)
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -53,10 +68,11 @@ class StochasticGCMC(GeneralRecommender):
 
     def forward_block(self , block , h):
         with block.local_scope():
-            block.srcdata['x'] = h
+            block.srcdata['x'] = self.node_dropout(h)
             block.update_all(self.msg , gF.sum('m' , 'y'))
             x = thF.relu(block.dstdata['y'])
             x = thF.relu(self.W_glob(x))
+            x = self.dense_dropout(x)
             return x
 
 
@@ -76,23 +92,18 @@ class StochasticGCMC(GeneralRecommender):
         predictions = self.forward(batch)
         target = th.zeros(len(users) * 2, dtype=th.long).to(self.device)
         target[:len(users)] = 1
-
         return self.loss(predictions , target)
 
     @th.no_grad()
     def predict(self, interaction):
         user = interaction[self.USER_ID]
         item = interaction[self.ITEM_ID] + self.num_users
-        user , item = self.check_point[user] , self.check_point[item]          # [batch_size, embedding_size]
+        user , item = self.check_point[user] , self.check_point[item]
         ret = self.decoder(user , item)[:,1]
         return ret.cpu()
 
     @th.no_grad()
     def inference(self,mode='validation'):
-        """
-        Offline inference with this module
-        """
-        print(mode)
         assert mode in ['validation' , 'testing'] , "got mode {}".format(mode)
         from dgl.dataloading import NodeDataLoader , MultiLayerNeighborSampler
         self.eval()
@@ -101,7 +112,6 @@ class StochasticGCMC(GeneralRecommender):
         else:
             sampler = MultiLayerNeighborSampler(self.fans)
         g = self.cpu_graph
-        self.check_point = th.zeros(g.number_of_nodes(),75).to(commons.device)
         kwargs = {
             'batch_size' : 64,
             'shuffle' : True,

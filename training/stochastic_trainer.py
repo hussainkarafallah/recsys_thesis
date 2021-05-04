@@ -67,7 +67,6 @@ class StochasticTrainer(Trainer):
             self.optimizer.step()
             total_loss += loss.item()
         total_loss /= iterations
-        print(total_loss)
         return total_loss
 
     def evaluate(self, eval_data, load_best_model=True, model_file=None, show_progress=False ,mode = "validation"):

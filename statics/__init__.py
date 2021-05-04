@@ -25,5 +25,6 @@ model_name_map = {
 
 trainers = {
     'DeepWalk' : StaticTrainer,
-    'DeepWalk++' : Trainer
+    'ExtendedDeepWalk' : Trainer,
+    'StochasticGCMC' : StochasticTrainer
 }
