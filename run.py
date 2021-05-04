@@ -47,7 +47,7 @@ def run_trial(model_name , dataset_name , hp_config = None):
     if verbose:
         logger.info(dataset)
 
-    model = model_class(config, train_data)
+    model = model_class(config, train_data).to(commons.device)
     trainer = utils.get_trainer(config)(config, model)
 
     best_valid_score, best_valid_result = trainer.fit(train_data, valid_data , verbose= verbose , show_progress=verbose)
@@ -73,3 +73,5 @@ if __name__ == '__main__':
 
     model_name = args.model
     dataset_name = args.dataset
+
+    run_trial(model_name , dataset_name)

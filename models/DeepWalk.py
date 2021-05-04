@@ -15,8 +15,8 @@ class DeepWalk(GeneralRecommender):
     input_type = InputType.PAIRWISE
     __name__ = 'DeepWalk'
     default_params = {
-        'num_walks': 200,
-        'walk_length': 20,
+        'num_walks': 100,
+        'walk_length': 5,
         'embeddings': 128,
         'window': 5,
         'epochs': 1,
@@ -125,8 +125,8 @@ class DeepWalk(GeneralRecommender):
 
 
     def predict(self, interaction):
-        interaction = interaction.cpu()
         user = interaction[self.USER_ID]
+        assert user.device.type == 'cuda'
         item = interaction[self.ITEM_ID] + self.num_users
         user , item = self.embeddings[user] , self.embeddings[item]          # [batch_size, embedding_size]
         ret = th.mul(user , item).sum(dim = 1).squeeze()
@@ -138,8 +138,8 @@ class DeepWalk(GeneralRecommender):
 class ExtendedDeepWalk(DeepWalk):
     __name__ = 'DeepWalk++'
     default_params = {
-        'num_walks': 200,
-        'walk_length': 20,
+        'num_walks': 100,
+        'walk_length': 5,
         'embeddings': 128,
         'window': 5,
         'dropout' : 0.2
