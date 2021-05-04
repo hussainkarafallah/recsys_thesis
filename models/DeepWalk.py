@@ -152,8 +152,11 @@ class ExtendedDeepWalk(DeepWalk):
         self.dropout = th.nn.Dropout(self.dropout_rate)
 
     def init_params(self):
+        from torch.nn.init import xavier_uniform_ , zeros_
         self.embeddings = th.nn.Parameter(th.from_numpy(self._embedding) , requires_grad=False)
         self.W = th.nn.Linear(self.dimensions , self.dimensions)
+        xavier_uniform_(self.W.weight)
+        zeros_(self.W.bias)
 
     def forward(self , idxes):
         ret = thF.relu(self.W(self.embeddings[idxes]))
