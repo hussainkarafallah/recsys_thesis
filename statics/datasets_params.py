@@ -9,6 +9,7 @@ datasets_params = {
         'valid_metric' : 'Recall@20'
     } ,
     'gowalla' : {
+        'load_col' : {'inter': ['user_id', 'item_id','timestamp']},
         'min_user_inter_num' : 10,
         'min_item_inter_num' : 10,
         'eval_setting': 'TO_RS,pop100',
