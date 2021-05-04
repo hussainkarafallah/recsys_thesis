@@ -16,8 +16,8 @@ class DeepWalk(GeneralRecommender):
     __name__ = 'DeepWalk'
     default_params = {
         'num_walks': 100,
-        'walk_length': 5,
-        'embeddings': 128,
+        'walk_length': 50,
+        'embeddings': 64,
         'window': 5,
         'epochs': 1,
     }

@@ -3,11 +3,14 @@ import numpy as np
 import torch
 import os
 
-seed = 2020
-random.seed(seed)
-np.random.seed(seed)
-torch.manual_seed(seed)
-torch.cuda.manual_seed(seed)
+def init_seeds():
+    global seed , device
+    seed = 2020
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 workers = min(os.cpu_count() - 2 , 12)
 
@@ -30,7 +33,7 @@ os.makedirs(os.path.join(root_dir , 'data/walks') , exist_ok=True)
 #log_dir = os.path.join(head_log_dir , datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 #global_writer = SummaryWriter(log_dir)
 
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
 logger_name = 'recbole'
 
 print("Initialized All seeds")

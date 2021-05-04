@@ -5,9 +5,10 @@ from recbole.config import Config
 from recbole.utils import init_seed , init_logger
 from recbole.data import data_preparation , create_dataset
 import utils
+import torch
 from recbole.utils.utils import set_color
 from utils.data import add_graph
-
+import gc
 
 def run_trial(model_name , dataset_name , hp_config = None):
 
@@ -17,6 +18,7 @@ def run_trial(model_name , dataset_name , hp_config = None):
     else:
         tuning = True
 
+    commons.init_seeds()
     verbose = True
     #verbose = (not tuning)
     model_class = statics.model_name_map[model_name]

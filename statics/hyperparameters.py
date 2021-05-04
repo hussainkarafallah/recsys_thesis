@@ -1,9 +1,9 @@
 hyperparameters = {
     'DeepWalk': {
-        'num_walks' : [50 , 100 , 200],
-        'walk_length' : [5 , 10 , 20],
+        'num_walks' : [25 , 50 , 100],
+        'walk_length' : [5 , 7 , 10],
         'window' : [5 , 10],
-        'embeddings' : [64 , 128],
+        'embeddings' : [64],
     },
     'DeepWalk++': {
         'num_walks' : [100 , 250],
