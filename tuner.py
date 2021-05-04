@@ -20,15 +20,20 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--model" , type = str , action = 'store' , help = "model name")
     parser.add_argument("--dataset" , type = str , action = 'store' , help = "dataset name")
+    parser.add_argument("--file" , type = str , action = 'store' , help = "parameters file" )
     args , unknown = parser.parse_known_args()
 
     
     model_name = args.model
     dataset_name = args.dataset
+    params_file = args.file
 
     from itertools import product
 
-    hp_dict = statics.hyperparameters[args.model]
+    with open(params_file) as f:
+        hp_dict = json.load(f)
+    hp_dict = hp_dict[args.model]
+    print(hp_dict)
     keys = hp_dict.keys()
     space = product(*list(hp_dict.values()))
     entries = []
@@ -47,6 +52,7 @@ if __name__ == '__main__':
         metric_name = ret['metric']
         params[ ret['metric'] ] = ret['best_valid_score']
         docs.append(params)
+        print(json.dumps(params))
 
     hp_df = pandas.DataFrame.from_records(docs)
     csv_name = os.path.join(commons.tuning_results_dir , model_name + '_' + dataset_name + '.csv')

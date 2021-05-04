@@ -20,7 +20,7 @@ def run_trial(model_name , dataset_name , hp_config = None):
 
     commons.init_seeds()
     verbose = True
-    #verbose = (not tuning)
+    verbose = (not tuning)
     model_class = statics.model_name_map[model_name]
     try:
         default_config = model_class.default_params

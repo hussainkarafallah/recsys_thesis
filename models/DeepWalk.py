@@ -142,7 +142,8 @@ class ExtendedDeepWalk(DeepWalk):
         'walk_length': 5,
         'embeddings': 128,
         'window': 5,
-        'dropout' : 0.2
+        'dropout' : 0.2,
+        'stopping_step' : 10,
     }
 
     def __init__(self , config , dataset):
@@ -152,15 +153,18 @@ class ExtendedDeepWalk(DeepWalk):
         self.dropout = th.nn.Dropout(self.dropout_rate)
 
     def init_params(self):
-        from torch.nn.init import xavier_uniform_ , zeros_
+        from torch.nn.init import kaiming_uniform_ , zeros_
         self.embeddings = th.nn.Parameter(th.from_numpy(self._embedding) , requires_grad=False)
         self.W = th.nn.Linear(self.dimensions , self.dimensions)
-        xavier_uniform_(self.W.weight)
+        kaiming_uniform_(self.W.weight)
         zeros_(self.W.bias)
 
     def forward(self , idxes):
-        ret = thF.relu(self.W(self.embeddings[idxes]))
-        return thF.normalize(ret , p = 2 , dim = 1)
+        x = self.embeddings[idxes]
+        x = self.dropout(x)
+        ret = thF.relu(self.W(x))
+        return ret
+        #return thF.normalize(ret , p = 2 , dim = 1)
 
     def calculate_loss(self, interaction):
         users = interaction[self.USER_ID]
@@ -176,8 +180,7 @@ class ExtendedDeepWalk(DeepWalk):
 
     def predict(self, interaction):
         user = self.forward(interaction[self.USER_ID])
-        item = self.forward(interaction[self.ITEM_ID]) + self.num_users
-        user , item = self.forward(user) , self.forward(item)
+        item = self.forward(interaction[self.ITEM_ID] + self.num_users)
         return th.mul(user , item).sum(dim = 1).cpu()
 
 

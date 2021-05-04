@@ -1,4 +1,3 @@
-from .hyperparameters import hyperparameters
 from .datasets_params import datasets_params
 from training import *
 from models import *

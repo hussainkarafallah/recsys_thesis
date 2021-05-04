@@ -3,14 +3,17 @@ import numpy as np
 import torch
 import os
 
+seed = 2020
+device = 'cuda'
+
 def init_seeds():
     global seed , device
-    seed = 2020
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
 
 workers = min(os.cpu_count() - 2 , 12)
 
