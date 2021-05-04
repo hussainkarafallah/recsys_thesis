@@ -6,7 +6,6 @@ class StaticTrainer(Trainer):
         assert config['epochs'] == 1 , "Trainer for static models should have only epoch"
 
     def _train_epoch(self, train_data, epoch_idx, loss_func=None, show_progress=False):
-        self.model.fit()
         return 0
 
 

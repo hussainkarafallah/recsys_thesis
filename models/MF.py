@@ -7,12 +7,12 @@ from recbole.model.loss import BPRLoss
 from recbole.model.init import xavier_normal_initialization
 
 
-class NewModel(GeneralRecommender):
+class MF(GeneralRecommender):
 
     input_type = InputType.PAIRWISE
 
     def __init__(self, config, dataset):
-        super(NewModel, self).__init__(config, dataset)
+        super(MF, self).__init__(config, dataset)
 
         # load dataset info
         self.n_users = dataset.user_num

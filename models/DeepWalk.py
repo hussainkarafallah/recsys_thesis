@@ -7,6 +7,9 @@ import torch as th
 import torch.nn.functional as thF
 import numpy as np
 import random , logging , os
+from recbole.model.loss import BPRLoss
+import logging
+
 
 class DeepWalk(GeneralRecommender):
     input_type = InputType.PAIRWISE
@@ -16,7 +19,6 @@ class DeepWalk(GeneralRecommender):
         'walk_length': 20,
         'embeddings': 128,
         'window': 5,
-        'learning_rate': 0.025,
         'epochs': 1,
     }
     def __init__(self, config, dataset):
@@ -30,12 +32,11 @@ class DeepWalk(GeneralRecommender):
         self.walk_length = config['walk_length']
         self.dimensions = config['embeddings']
         self.window_size = config['window']
-        self.learning_rate = config['learning_rate']
         self.seed = commons.seed
-        self.logger = logging.getLogger(commons.logger_name)
+        self.logger = logging.getLogger()
 
         walkhash = hash((self.num_walks , self.walk_length))
-        embeddinghash = hash((self.num_walks , self.walk_length , self.window_size))
+        embeddinghash = hash((self.num_walks , self.walk_length , self.window_size , self.dimensions))
         self.walks_file = os.path.join(commons.root_dir , "data/walks" , "deepwalk_{}.walks".format(walkhash))
         self.embeddings_file = os.path.join(commons.root_dir , "data/walks" , "deepwalk_{}".format(embeddinghash))
         if not os.path.exists(self.walks_file):
@@ -44,6 +45,12 @@ class DeepWalk(GeneralRecommender):
         else:
             self.logger.info("Found cached walks on disk.")
         self.dummy_parameter = th.nn.Parameter(th.zeros((2,2) , requires_grad=True))
+        self.fit()
+        self.init_params()
+
+    def init_params(self):
+        self.embeddings = thF.normalize(th.from_numpy(self._embedding), p=2, dim=1)
+        self.embeddings = th.nn.Parameter(self.embeddings, requires_grad=False)
 
     @staticmethod
     @thread_wrapped_func
@@ -83,9 +90,9 @@ class DeepWalk(GeneralRecommender):
         for p in ps:
             p.terminate()
 
-        all_walks = [ self.simple_filter(x) for x in all_walks ]
         with open(self.walks_file , 'w') as f:
             for walk in all_walks:
+                walk = self.simple_filter(walk)
                 f.write(' '.join(walk))
                 f.write('\n')
 
@@ -103,7 +110,6 @@ class DeepWalk(GeneralRecommender):
                              corpus_file=self.walks_file,
                              hs=1,
                              sg=1,
-                             alpha=self.learning_rate,
                              epochs = 1,
                              vector_size=self.dimensions,
                              window=self.window_size,
@@ -117,8 +123,6 @@ class DeepWalk(GeneralRecommender):
             self._embedding = np.array([model.wv[str(n)] for n in range(num_of_nodes)])
             np.save(self.embeddings_file , self._embedding)
 
-        self.embeddings = thF.normalize(th.from_numpy(self._embedding) , p = 2 , dim = 1)
-        self.embeddings = th.nn.Parameter(self.embeddings , requires_grad=False)
 
     def predict(self, interaction):
         interaction = interaction.cpu()
@@ -130,5 +134,46 @@ class DeepWalk(GeneralRecommender):
 
     def forward(self , *input , **kwargs):
         pass
+
+class ExtendedDeepWalk(DeepWalk):
+    __name__ = 'DeepWalk++'
+    default_params = {
+        'num_walks': 200,
+        'walk_length': 20,
+        'embeddings': 128,
+        'window': 5,
+        'dropout' : 0.2
+    }
+
+    def __init__(self , config , dataset):
+        super(ExtendedDeepWalk, self).__init__(config , dataset)
+        self.loss = BPRLoss()
+        self.dropout_rate = config['dropout']
+        self.dropout = th.nn.Dropout(self.dropout_rate)
+
+    def init_params(self):
+        self.embeddings = th.nn.Parameter(th.from_numpy(self._embedding) , requires_grad=False)
+        self.W = th.nn.Linear(self.dimensions , self.dimensions)
+
+    def forward(self , idxes):
+        ret = thF.relu(self.W(self.embeddings[idxes]))
+        return thF.normalize(ret , p = 2 , dim = 1)
+
+    def calculate_loss(self, interaction):
+        users = interaction[self.USER_ID]
+        pos = interaction[self.ITEM_ID] + self.num_users
+        neg = interaction[self.NEG_ITEM_ID]+ self.num_users
+
+        users , pos , neg = map(self.forward , [users , pos , neg])
+
+        pos_item_score = th.mul(users, pos).sum(dim=1)
+        neg_item_score = th.mul(users, neg).sum(dim=1)
+
+        return self.loss(pos_item_score , neg_item_score)
+
+    def predict(self, interaction):
+        user = self.forward(interaction[self.USER_ID])
+        item = self.forward(interaction[self.ITEM_ID]) + self.num_users
+        return th.mul(user , item).sum(dim = 1).cpu()
 
 
