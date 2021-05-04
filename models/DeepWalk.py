@@ -177,6 +177,7 @@ class ExtendedDeepWalk(DeepWalk):
     def predict(self, interaction):
         user = self.forward(interaction[self.USER_ID])
         item = self.forward(interaction[self.ITEM_ID]) + self.num_users
+        user , item = self.forward(user) , self.forward(item)
         return th.mul(user , item).sum(dim = 1).cpu()
 
 
