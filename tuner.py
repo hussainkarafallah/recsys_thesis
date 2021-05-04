@@ -21,6 +21,7 @@ if __name__ == '__main__':
     parser.add_argument("--model" , type = str , action = 'store' , help = "model name")
     parser.add_argument("--dataset" , type = str , action = 'store' , help = "dataset name")
     parser.add_argument("--file" , type = str , action = 'store' , help = "parameters file" )
+    parser.add_argument("--out" , type = str , action='store' , help = "output_file")
     args , unknown = parser.parse_known_args()
 
     
@@ -56,7 +57,10 @@ if __name__ == '__main__':
 
 
     hp_df = pandas.DataFrame.from_records(docs)
-    csv_name = os.path.join(commons.tuning_results_dir , model_name + '_' + dataset_name + '.csv')
+    if not args.out:
+        csv_name = os.path.join(commons.tuning_results_dir , model_name + '_' + dataset_name + '.csv')
+    else:
+        csv_name = args.out
     hp_df.sort_values(by = [metric_name] , inplace=True , ascending=False)
     hp_df.to_csv(csv_name , index = False)
 
