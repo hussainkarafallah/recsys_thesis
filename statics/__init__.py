@@ -17,6 +17,7 @@ model_name_map = {
     'GCMC' : GCMC,
     'S-GCMC' : StochasticGCMC,
     'NGCF' : NGCF,
+    'S-NGCF' : StochasticNGCF,
     'MF' : MF,
     'BPR' : BPR,
     'Pop' : Pop,
@@ -26,5 +27,6 @@ model_name_map = {
 trainers = {
     'DeepWalk' : StaticTrainer,
     'ExtendedDeepWalk' : Trainer,
-    'StochasticGCMC' : StochasticTrainer
+    'StochasticGCMC' : StochasticTrainer,
+    'StochasticNGCF' : StochasticTrainer
 }

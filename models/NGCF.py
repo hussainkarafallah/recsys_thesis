@@ -17,9 +17,9 @@ class NGCF(GeneralRecommender):
 
     def __init__(self, config, dataset):
         super(NGCF, self).__init__(config, dataset)
-
         # load dataset info
         self.interaction_matrix = dataset.inter_matrix(form='coo').astype(np.float32)
+        self.recalc = True
 
         # load parameters info
         self.embedding_size = config['embedding_size']
@@ -128,29 +128,20 @@ class NGCF(GeneralRecommender):
         mf_loss = self.mf_loss(pos_scores, neg_scores)  # calculate BPR Loss
 
         reg_loss = self.reg_loss(u_embeddings, pos_embeddings, neg_embeddings)  # L2 regularization of embeddings
-
+        self.recalc = True
         return mf_loss + self.reg_weight * reg_loss
 
     def predict(self, interaction):
 
         user = interaction[self.USER_ID]
         item = interaction[self.ITEM_ID]
-
-        user_all_embeddings, item_all_embeddings = self.forward()
-
-        u_embeddings = user_all_embeddings[user]
-        i_embeddings = item_all_embeddings[item]
+        if self.recalc:
+            user_all_embeddings, item_all_embeddings = self.forward()
+            self.u_checkpoint = user_all_embeddings
+            self.i_checkpoint = item_all_embeddings
+            self.recalc = False
+        u_embeddings = self.u_checkpoint[user]
+        i_embeddings = self.i_checkpoint[item]
         scores = torch.mul(u_embeddings, i_embeddings).sum(dim=1)
         return scores
 
-    def full_sort_predict(self, interaction):
-        user = interaction[self.USER_ID]
-        if self.restore_user_e is None or self.restore_item_e is None:
-            self.restore_user_e, self.restore_item_e = self.forward()
-        # get user embedding from storage variable
-        u_embeddings = self.restore_user_e[user]
-
-        # dot with all item embedding to accelerate
-        scores = torch.matmul(u_embeddings, self.restore_item_e.transpose(0, 1))
-
-        return scores.view(-1)
