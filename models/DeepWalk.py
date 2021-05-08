@@ -36,7 +36,7 @@ class DeepWalk(GeneralRecommender):
         self.window_size = min(self.walk_length , config['window'])
         self.seed = commons.seed
         self.logger = logging.getLogger()
-        self.epochs = config['epochs']
+        self.epochs = config['passes']
 
         walkhash = config['dataset'] + "_n_" + str(self.num_walks) + "_l_" + str(self.walk_length)
         embeddinghash = walkhash + "_w_" + str(self.window_size) + "_d_" + str(self.dimensions) + "_e_" + str(self.epochs)
