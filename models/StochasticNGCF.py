@@ -71,8 +71,8 @@ class StochasticNGCF(GeneralRecommender):
         'node_dropout': 0.2,
         'message_dropout': 0.2,
         'fans': [None , None , None],
-        'layers' : [64 , 64 , 64],
-        'reg': 1e-5,
+        'hidden_size_list' : [64 , 64 , 64],
+        'reg_weight': 1e-5,
         'train_batch_size': 512,
 
     }
@@ -84,8 +84,8 @@ class StochasticNGCF(GeneralRecommender):
         self.node_dropout = nn.Dropout(config['node_dropout'])
         self.msg_dropout = nn.Dropout(config['message_dropout'])
         self.fans = config['fans']
-        self.layers_dim = config['layers']
-        self.decay = config['reg']
+        self.layers_dim = config['hidden_size_list']
+        self.decay = config['reg_weight']
 
 
         self.layers = []

@@ -12,6 +12,7 @@ import logging
 
 
 class DeepWalk(GeneralRecommender):
+
     input_type = InputType.PAIRWISE
     __name__ = 'DeepWalk'
     default_params = {
@@ -22,6 +23,7 @@ class DeepWalk(GeneralRecommender):
         'epochs': 1,
     }
     def __init__(self, config, dataset):
+
         super(DeepWalk, self).__init__(config, dataset)
 
         self.num_users = dataset.num_users
@@ -130,7 +132,15 @@ class DeepWalk(GeneralRecommender):
         item = interaction[self.ITEM_ID] + self.num_users
         user , item = self.embeddings[user] , self.embeddings[item]
         ret = th.mul(user , item).sum(dim = 1).squeeze()
-        return ret.cpu()
+        return ret
+
+    def full_sort_predict(self, interaction):
+        user = interaction[self.USER_ID]
+        u_embeddings = self.embeddings[user]
+        i_embeddings = self.embeddings[self.num_users :]
+        assert i_embeddings.shape[0] == self.num_items
+        scores = th.matmul(u_embeddings, self.i_checkpoint.T)
+        return scores.view(-1)
 
     def forward(self , *input , **kwargs):
         pass
