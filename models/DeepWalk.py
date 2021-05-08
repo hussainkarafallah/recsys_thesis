@@ -154,7 +154,7 @@ class ExtendedDeepWalk(DeepWalk):
         'walk_length': 5,
         'embeddings': 128,
         'window': 5,
-        'dropout' : 0.2,
+        'dropout' : 0.0,
         'stopping_step' : 10,
     }
 
@@ -175,10 +175,10 @@ class ExtendedDeepWalk(DeepWalk):
         x = self.embeddings[idxes]
         x = self.dropout(x)
         ret = thF.relu(self.W(x))
-        return ret
-        #return thF.normalize(ret , p = 2 , dim = 1)
+        return thF.normalize(ret , p = 2 , dim = 1)
 
     def calculate_loss(self, interaction):
+        self.recalc = True
         users = interaction[self.USER_ID]
         pos = interaction[self.ITEM_ID] + self.num_users
         neg = interaction[self.NEG_ITEM_ID]+ self.num_users
@@ -195,10 +195,19 @@ class ExtendedDeepWalk(DeepWalk):
         item = self.forward(interaction[self.ITEM_ID] + self.num_users)
         return th.mul(user , item).sum(dim = 1).cpu()
 
+    def check_recalc(self):
+        if self.recalc:
+            user_all_embeddings = self.forward(th.arange(0 , self.num_users).long())
+            item_all_embeddings = self.forward(th.arange(self.num_users , self.num_users + self.num_items).long())
+            self.u_checkpoint = user_all_embeddings
+            self.i_checkpoint = item_all_embeddings
+            self.recalc = False
+            assert self.u_checkpoint.shape[0] == self.num_users
+            assert self.i_checkpoint.shape[0] == self.num_items
+
     def full_sort_predict(self, interaction):
         user = interaction[self.USER_ID]
-        u_embeddings = self.embeddings[user]
-        i_embeddings = self.embeddings[self.num_users :]
-        assert i_embeddings.shape[0] == self.num_items
-        scores = th.matmul(u_embeddings, i_embeddings.T)
+        self.check_recalc()
+        u_embeddings = self.u_checkpoint[user]
+        scores = th.matmul(u_embeddings, self.i_checkpoint.T)
         return scores.view(-1)

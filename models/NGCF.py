@@ -39,10 +39,6 @@ class NGCF(GeneralRecommender):
         self.mf_loss = BPRLoss()
         self.reg_loss = EmbLoss()
 
-        # storage variables for full sort evaluation acceleration
-        self.restore_user_e = None
-        self.restore_item_e = None
-
         # generate intermediate data
         self.norm_adj_matrix = self.get_norm_adj_mat().to(self.device)
         self.eye_matrix = self.get_eye_mat().to(self.device)
@@ -110,10 +106,6 @@ class NGCF(GeneralRecommender):
         return user_all_embeddings, item_all_embeddings
 
     def calculate_loss(self, interaction):
-        # clear the storage variable when training
-        if self.restore_user_e is not None or self.restore_item_e is not None:
-            self.restore_user_e, self.restore_item_e = None, None
-
         user = interaction[self.USER_ID]
         pos_item = interaction[self.ITEM_ID]
         neg_item = interaction[self.NEG_ITEM_ID]
