@@ -17,7 +17,7 @@ class DeepWalk(GeneralRecommender):
     __name__ = 'DeepWalk'
     default_params = {
         'num_walks': 100,
-        'walk_length': 50,
+        'walk_length': 6,
         'embeddings': 64,
         'window': 5,
         'epochs': 1,
@@ -134,7 +134,7 @@ class DeepWalk(GeneralRecommender):
         item = interaction[self.ITEM_ID] + self.num_users
         user , item = self.embeddings[user] , self.embeddings[item]
         ret = th.mul(user , item).sum(dim = 1).squeeze()
-        return ret
+        return ret.cpu()
 
     def full_sort_predict(self, interaction):
         user = interaction[self.USER_ID]
@@ -142,7 +142,7 @@ class DeepWalk(GeneralRecommender):
         i_embeddings = self.embeddings[self.num_users :]
         assert i_embeddings.shape[0] == self.num_items
         scores = th.matmul(u_embeddings, i_embeddings.T)
-        return scores.view(-1)
+        return scores.view(-1).cpu()
 
     def forward(self , *input , **kwargs):
         pass
