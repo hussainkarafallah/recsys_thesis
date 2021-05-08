@@ -36,9 +36,10 @@ class DeepWalk(GeneralRecommender):
         self.window_size = min(self.walk_length , config['window'])
         self.seed = commons.seed
         self.logger = logging.getLogger()
+        self.epochs = config['epochs']
 
         walkhash = config['dataset'] + "_n_" + str(self.num_walks) + "_l_" + str(self.walk_length)
-        embeddinghash = walkhash + "_w_" + str(self.window_size) + "_d_" + str(self.dimensions)
+        embeddinghash = walkhash + "_w_" + str(self.window_size) + "_d_" + str(self.dimensions) + "_e_" + str(self.epochs)
 
         self.walks_file = os.path.join(commons.root_dir , "data/walks" , "deepwalk_{}.walks".format(walkhash))
         self.embeddings_file = os.path.join(commons.root_dir , "data/walks" , "deepwalk_{}".format(embeddinghash))
@@ -113,7 +114,7 @@ class DeepWalk(GeneralRecommender):
                              corpus_file=self.walks_file,
                              hs=1,
                              sg=1,
-                             epochs = 1,
+                             epochs = self.epochs,
                              vector_size=self.dimensions,
                              window=self.window_size,
                              min_count=1,
