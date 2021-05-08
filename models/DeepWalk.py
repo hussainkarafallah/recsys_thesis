@@ -139,7 +139,7 @@ class DeepWalk(GeneralRecommender):
         u_embeddings = self.embeddings[user]
         i_embeddings = self.embeddings[self.num_users :]
         assert i_embeddings.shape[0] == self.num_items
-        scores = th.matmul(u_embeddings, self.i_checkpoint.T)
+        scores = th.matmul(u_embeddings, self.i_embeddings.T)
         return scores.view(-1)
 
     def forward(self , *input , **kwargs):
