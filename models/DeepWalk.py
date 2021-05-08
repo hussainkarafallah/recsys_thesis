@@ -195,4 +195,10 @@ class ExtendedDeepWalk(DeepWalk):
         item = self.forward(interaction[self.ITEM_ID] + self.num_users)
         return th.mul(user , item).sum(dim = 1).cpu()
 
-
+    def full_sort_predict(self, interaction):
+        user = interaction[self.USER_ID]
+        u_embeddings = self.embeddings[user]
+        i_embeddings = self.embeddings[self.num_users :]
+        assert i_embeddings.shape[0] == self.num_items
+        scores = th.matmul(u_embeddings, i_embeddings.T)
+        return scores.view(-1)
