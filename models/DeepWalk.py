@@ -37,8 +37,9 @@ class DeepWalk(GeneralRecommender):
         self.seed = commons.seed
         self.logger = logging.getLogger()
 
-        walkhash = hash((config['dataset'] , self.num_walks , self.walk_length))
-        embeddinghash = hash((self.num_walks , self.walk_length , self.window_size , self.dimensions))
+        walkhash = config['dataset'] + "_n_" + str(self.num_walks) + "_l_" + str(self.walk_length)
+        embeddinghash = walkhash + "_w_" + str(self.window_size) + "_d_" + str(self.dimensions)
+
         self.walks_file = os.path.join(commons.root_dir , "data/walks" , "deepwalk_{}.walks".format(walkhash))
         self.embeddings_file = os.path.join(commons.root_dir , "data/walks" , "deepwalk_{}".format(embeddinghash))
         if not os.path.exists(self.walks_file):
