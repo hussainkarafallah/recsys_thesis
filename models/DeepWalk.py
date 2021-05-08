@@ -31,11 +31,11 @@ class DeepWalk(GeneralRecommender):
         self.num_walks = config['num_walks']
         self.walk_length = config['walk_length']
         self.dimensions = config['embeddings']
-        self.window_size = config['window']
+        self.window_size = min(self.walk_length , config['window'])
         self.seed = commons.seed
         self.logger = logging.getLogger()
 
-        walkhash = hash((self.num_walks , self.walk_length))
+        walkhash = hash((dataset.dataset_name , self.num_walks , self.walk_length))
         embeddinghash = hash((self.num_walks , self.walk_length , self.window_size , self.dimensions))
         self.walks_file = os.path.join(commons.root_dir , "data/walks" , "deepwalk_{}.walks".format(walkhash))
         self.embeddings_file = os.path.join(commons.root_dir , "data/walks" , "deepwalk_{}".format(embeddinghash))
@@ -128,7 +128,7 @@ class DeepWalk(GeneralRecommender):
         user = interaction[self.USER_ID]
         assert user.device.type == 'cuda'
         item = interaction[self.ITEM_ID] + self.num_users
-        user , item = self.embeddings[user] , self.embeddings[item]          # [batch_size, embedding_size]
+        user , item = self.embeddings[user] , self.embeddings[item]
         ret = th.mul(user , item).sum(dim = 1).squeeze()
         return ret.cpu()
 

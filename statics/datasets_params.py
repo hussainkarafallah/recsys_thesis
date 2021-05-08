@@ -17,6 +17,6 @@ datasets_params = {
         'metrics' : ['Recall', 'NDCG', 'Hit', 'Precision'],
         'topk': 20,
         'valid_metric' : 'Recall@20',
-        'split_ratio' : [0.8 , 0.1 , 0.1]
+        'split_ratio' : [0.7 , 0.1 , 0.2]
     }
 }
