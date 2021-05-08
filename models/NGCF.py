@@ -131,17 +131,26 @@ class NGCF(GeneralRecommender):
         self.recalc = True
         return mf_loss + self.reg_weight * reg_loss
 
-    def predict(self, interaction):
-
-        user = interaction[self.USER_ID]
-        item = interaction[self.ITEM_ID]
+    def check_recalc(self):
         if self.recalc:
             user_all_embeddings, item_all_embeddings = self.forward()
             self.u_checkpoint = user_all_embeddings
             self.i_checkpoint = item_all_embeddings
             self.recalc = False
+
+    def predict(self, interaction):
+        user = interaction[self.USER_ID]
+        item = interaction[self.ITEM_ID]
+        self.check_recalc()
         u_embeddings = self.u_checkpoint[user]
         i_embeddings = self.i_checkpoint[item]
         scores = torch.mul(u_embeddings, i_embeddings).sum(dim=1)
         return scores
+
+    def full_sort_predict(self, interaction):
+        user = interaction[self.USER_ID]
+        self.check_recalc()
+        u_embeddings = self.u_checkpoint[user]
+        scores = torch.matmul(u_embeddings, self.i_checkpoint.T)
+        return scores.view(-1)
 
