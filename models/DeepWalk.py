@@ -21,6 +21,8 @@ class DeepWalk(GeneralRecommender):
         'embeddings': 64,
         'window': 5,
         'epochs': 1,
+        'negative':20,
+        'learning_rate':0.025
     }
     def __init__(self, config, dataset):
 
@@ -34,12 +36,15 @@ class DeepWalk(GeneralRecommender):
         self.walk_length = config['walk_length']
         self.dimensions = config['embeddings']
         self.window_size = min(self.walk_length , config['window'])
+        self.lr = config['learning_rate']
+        self.negative = config['negative']
+        self.epochs = 1
         self.seed = commons.seed
         self.logger = logging.getLogger()
-        self.epochs = 1
+
 
         walkhash = config['dataset'] + "_n_" + str(self.num_walks) + "_l_" + str(self.walk_length)
-        embeddinghash = walkhash + "_w_" + str(self.window_size) + "_d_" + str(self.dimensions) + "_e_" + str(self.epochs)
+        embeddinghash = walkhash + "_w_" + str(self.window_size) + "_d_" + str(self.dimensions)
 
         self.walks_file = os.path.join(commons.root_dir , "data/walks" , "deepwalk_{}.walks".format(walkhash))
         self.embeddings_file = os.path.join(commons.root_dir , "data/walks" , "deepwalk_{}".format(embeddinghash))
@@ -119,6 +124,8 @@ class DeepWalk(GeneralRecommender):
                              window=self.window_size,
                              min_count=1,
                              workers=commons.workers,
+                             negative=self.negative,
+                             alpha=self.lr,
                              seed=self.seed
                     )
 
