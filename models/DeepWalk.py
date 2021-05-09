@@ -125,7 +125,6 @@ class DeepWalk(GeneralRecommender):
                              min_count=1,
                              workers=commons.workers,
                              negative=self.negative,
-                             alpha=self.lr,
                              seed=self.seed
                     )
 
@@ -158,11 +157,13 @@ class ExtendedDeepWalk(DeepWalk):
     __name__ = 'DeepWalk++'
     default_params = {
         'num_walks': 100,
-        'walk_length': 5,
-        'embeddings': 128,
+        'walk_length': 6,
+        'embeddings': 64,
         'window': 5,
-        'dropout' : 0.0,
+        'dropout' : 0.1,
         'stopping_step' : 10,
+        'negative' : 5,
+        'learning_rate' : 0.001
     }
 
     def __init__(self , config , dataset):
@@ -174,47 +175,41 @@ class ExtendedDeepWalk(DeepWalk):
     def init_params(self):
         from torch.nn.init import kaiming_uniform_ , zeros_
         self.embeddings = th.nn.Parameter(th.from_numpy(self._embedding) , requires_grad=False)
-        self.W = th.nn.Linear(self.dimensions , self.dimensions)
-        kaiming_uniform_(self.W.weight)
-        zeros_(self.W.bias)
+        self.W1 = th.nn.Linear(2 * self.dimensions , self.dimensions // 2)
+        self.W2 = th.nn.Linear(self.dimensions // 2 , 1)
+        kaiming_uniform_(self.W1.weight)
+        zeros_(self.W1.bias)
+        kaiming_uniform_(self.W2.weight)
+        zeros_(self.W2.bias)
 
-    def forward(self , idxes):
-        x = self.embeddings[idxes]
+    def forward(self , users , items , activate = False):
+        x = th.cat((users , items) , dim = 1)
+        x = self.W1(x)
         x = self.dropout(x)
-        ret = thF.relu(self.W(x))
-        return thF.normalize(ret , p = 2 , dim = 1)
+        x = self.W2(x)
+        x = x.flatten()
+        if activate:
+            return th.nn.functional.sigmoid(x)
+        else:
+            return x
+
 
     def calculate_loss(self, interaction):
         self.recalc = True
-        users = interaction[self.USER_ID]
-        pos = interaction[self.ITEM_ID] + self.num_users
-        neg = interaction[self.NEG_ITEM_ID]+ self.num_users
+        users = self.embeddings[interaction[self.USER_ID]]
+        pos = self.embeddings[interaction[self.ITEM_ID] + self.num_users]
+        neg = self.embeddings[interaction[self.NEG_ITEM_ID]+ self.num_users]
 
-        users , pos , neg = map(self.forward , [users , pos , neg])
-
-        pos_item_score = th.mul(users, pos).sum(dim=1)
-        neg_item_score = th.mul(users, neg).sum(dim=1)
+        pos_item_score = self.forward(users , pos)
+        neg_item_score = self.forward(users , neg)
 
         return self.loss(pos_item_score , neg_item_score)
 
     def predict(self, interaction):
-        user = self.forward(interaction[self.USER_ID])
-        item = self.forward(interaction[self.ITEM_ID] + self.num_users)
-        return th.mul(user , item).sum(dim = 1).cpu()
-
-    def check_recalc(self):
-        if self.recalc:
-            user_all_embeddings = self.forward(th.arange(0 , self.num_users).long())
-            item_all_embeddings = self.forward(th.arange(self.num_users , self.num_users + self.num_items).long())
-            self.u_checkpoint = user_all_embeddings
-            self.i_checkpoint = item_all_embeddings
-            self.recalc = False
-            assert self.u_checkpoint.shape[0] == self.num_users
-            assert self.i_checkpoint.shape[0] == self.num_items
+        user = self.embeddings[interaction[self.USER_ID]]
+        item = self.embeddings[interaction[self.ITEM_ID] + self.num_users]
+        return self.forward(user , item , activate=True)
 
     def full_sort_predict(self, interaction):
-        user = interaction[self.USER_ID]
-        self.check_recalc()
-        u_embeddings = self.u_checkpoint[user]
-        scores = th.matmul(u_embeddings, self.i_checkpoint.T)
-        return scores.view(-1)
+        raise NotImplementedError
+
