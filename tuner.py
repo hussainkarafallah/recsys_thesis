@@ -44,7 +44,6 @@ if __name__ == '__main__':
 
     for subset in list(space):
         params = OrderedDict(zip(keys , subset))
-        print(json.dumps(params, indent=1))
         container = Container(q, target=run_trial, args=(model_name,dataset_name) , kwargs={'hp_config' : params})
         container.start()
         container.join()
@@ -52,6 +51,7 @@ if __name__ == '__main__':
         container.terminate()
         params['validation'] = ret['best_valid_score']
         params['test'] = ret['test_score']
+        print(json.dumps(params, indent=1))
         docs.append(params)
 
 
