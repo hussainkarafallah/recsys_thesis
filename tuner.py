@@ -42,6 +42,11 @@ if __name__ == '__main__':
     docs = []
     q = multiprocessing.Queue()
 
+    if not args.out:
+        csv_name = os.path.join(commons.tuning_results_dir , model_name + '_' + dataset_name + '.csv')
+    else:
+        csv_name = args.out
+
     for subset in list(space):
         params = OrderedDict(zip(keys , subset))
         container = Container(q, target=run_trial, args=(model_name,dataset_name) , kwargs={'hp_config' : params})
@@ -53,17 +58,13 @@ if __name__ == '__main__':
         params['test'] = ret['test_score']
         print(json.dumps(params, indent=1))
         docs.append(params)
+        hp_df = pandas.DataFrame.from_records(docs)
+        hp_df.sort_values(by=['validation'], inplace=True, ascending=False)
+        hp_df.to_csv(csv_name, index=False)
 
-
-    hp_df = pandas.DataFrame.from_records(docs)
-    if not args.out:
-        csv_name = os.path.join(commons.tuning_results_dir , model_name + '_' + dataset_name + '.csv')
-    else:
-        csv_name = args.out
-    hp_df.sort_values(by = ['validation'] , inplace=True , ascending=False)
-    hp_df.to_csv(csv_name , index = False)
-
-    #"""
+    print("###############################################################################")
+    print("Tuning completed successfully")
+    print("###############################################################################")
 
 
 
