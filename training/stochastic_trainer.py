@@ -48,7 +48,7 @@ class StochasticTrainer(Trainer):
 
     def init_train_loader(self , train_data):
         self.train_loader = DataLoader( list(train_data) , batch_size=None, collate_fn=self.collate_fn,
-                                      worker_init_fn=commons.seed_worker, num_workers=6)
+                                      worker_init_fn=commons.seed_worker, num_workers=commons.workers)
 
 
     def _train_epoch(self, train_data, epoch_idx, **kwargs):
