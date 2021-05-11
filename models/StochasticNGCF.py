@@ -149,7 +149,7 @@ class StochasticNGCF(GeneralRecommender):
 
         g = self.cpu_graph
         kwargs = {
-            'batch_size': 128,
+            'batch_size': 1024,
             'shuffle': True,
             'drop_last': False,
             'num_workers': commons.workers,
@@ -166,6 +166,14 @@ class StochasticNGCF(GeneralRecommender):
             self.check_point[output_nodes] = h
 
         print('Inference Done Successfully')
+
+    def full_sort_predict(self, interaction):
+        user = interaction[self.USER_ID]
+        u_embedding = self.check_point[user]
+        i_embeddings = self.check_point[self.num_users : ]
+        assert i_embeddings.shape[0] == self.num_items
+        scores = th.matmul(u_embedding, i_embeddings)
+        return scores.view(-1)
 
     def create_bpr_loss(self, users, pos_items, neg_items):
         pos_scores = th.sum(th.mul(users, pos_items), dim=1)
