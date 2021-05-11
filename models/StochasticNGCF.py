@@ -73,7 +73,7 @@ class StochasticNGCF(GeneralRecommender):
         'fans': [None , None , None],
         'hidden_size_list' : [64 , 64 , 64],
         'reg_weight': 1e-5,
-        'train_batch_size': 512,
+        'train_batch_size': 2048,
 
     }
 
@@ -172,7 +172,7 @@ class StochasticNGCF(GeneralRecommender):
         u_embedding = self.check_point[user]
         i_embeddings = self.check_point[self.num_users : ]
         assert i_embeddings.shape[0] == self.num_items
-        scores = th.matmul(u_embedding, i_embeddings)
+        scores = th.matmul(u_embedding, i_embeddings.T)
         return scores.view(-1)
 
     def create_bpr_loss(self, users, pos_items, neg_items):
