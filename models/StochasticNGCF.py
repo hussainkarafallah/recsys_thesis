@@ -100,7 +100,7 @@ class StochasticNGCF(GeneralRecommender):
         self.num_items = dataset.num_items
 
         self.embedding = nn.Embedding(self.cpu_graph.num_nodes() , self.embedding_dim)
-
+        self.check_point = th.zeros( (self.cpu_graph.num_nodes() , self.embedding_dim * (self.num_layers + 1)) , requires_grad=False).to(commons.device)
         self.reset_parameters()
 
 
@@ -159,8 +159,10 @@ class StochasticNGCF(GeneralRecommender):
         # Within a layer, iterate over nodes in batches
         for input_nodes, output_nodes, blocks in tqdm(dataloader):
             blocks = [ x.to(commons.device) for x in blocks ]
-            users , d1 , d2 = th.arange(output_nodes.shape[0]).long().to(self.device) , th.zeros((0,)).to(self.device) , th.zeros((0,)).to(self.device)
-            h = self.forward_blocks(blocks , users , d1 , d2)
+            users = th.arange(output_nodes.shape[0]).long().to(self.device)
+            d1 = th.zeros((0,)).long().to(self.device)
+            d2 = th.zeros((0,)).long().to(self.device)
+            h = self.forward_blocks(blocks , users , d1 , d2)[0]
             self.check_point[output_nodes] = h
 
         print('Inference Done Successfully')
