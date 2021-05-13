@@ -21,12 +21,14 @@ model_name_map = {
     'MF' : MF,
     'BPR' : BPR,
     'Pop' : Pop,
-    'ItemKNN' : ItemKNN
+    'ItemKNN' : ItemKNN,
+    'LightGCN' : LightGCN
 }
 
 trainers = {
     'DeepWalk' : StaticTrainer,
     'ExtendedDeepWalk' : Trainer,
     'StochasticGCMC' : StochasticTrainer,
-    'StochasticNGCF' : StochasticTrainer
+    'StochasticNGCF' : StochasticTrainer,
+    'LightGCN' : Trainer
 }
