@@ -8,6 +8,7 @@ datasets_params = {
         'topk': 20,
         'valid_metric' : 'Recall@20',
         "split_ratio" : [0.6,0.2,0.2],
+        'eval_batch_size' : 1000000
     } ,
     'gowalla' : {
         'load_col' : {'inter': ['user_id', 'item_id','timestamp']},
@@ -17,6 +18,7 @@ datasets_params = {
         'metrics' : ['Recall', 'NDCG', 'Hit', 'Precision'],
         'topk': 20,
         'valid_metric' : 'Recall@20',
-        'split_ratio' : [0.7 , 0.1 , 0.2]
+        'split_ratio' : [0.7 , 0.1 , 0.2],
+        'eval_batch_size': 1000000
     }
 }
