@@ -88,7 +88,7 @@ class StochasticNGCF(GeneralRecommender):
         self.num_layers = len(self.layers_dim)
         self.fans = config['fans']
         if not self.fans:
-            self.fans = [None] * self.
+            self.fans = [None] * self.num_layers
         self.decay = config['reg_weight']
 
 
