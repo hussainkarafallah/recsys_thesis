@@ -70,7 +70,7 @@ class StochasticNGCF(GeneralRecommender):
         'embedding_size': 64,
         'node_dropout': 0.2,
         'message_dropout': 0.2,
-        'fans': [None , None , None],
+        'fans': None,
         'hidden_size_list' : [64 , 64 , 64],
         'reg_weight': 1e-5,
         'train_batch_size': 2048,
@@ -83,13 +83,16 @@ class StochasticNGCF(GeneralRecommender):
         self.embedding_dim = config['embedding_size']
         self.node_dropout = nn.Dropout(config['node_dropout'])
         self.msg_dropout = nn.Dropout(config['message_dropout'])
-        self.fans = config['fans']
+
         self.layers_dim = config['hidden_size_list']
+        self.num_layers = len(self.layers_dim)
+        self.fans = config['fans']
+        if not self.fans:
+            self.fans = [None] * self.
         self.decay = config['reg_weight']
 
 
         self.layers = []
-        self.num_layers = len(self.layers_dim)
         sz_arr = [self.embedding_dim] + self.layers_dim
         for i in range(len(self.layers_dim)):
             self.layers.append(NGCFLayer(sz_arr[i] , sz_arr[i+1] , config))
