@@ -103,7 +103,7 @@ class StochasticGCMC(GeneralRecommender):
         return ret.cpu()
 
     @th.no_grad()
-    def inference(self,mode='validation'):
+    def inference(self, mode='validation', verbose = False):
         assert mode in ['validation' , 'testing'] , "got mode {}".format(mode)
         from dgl.dataloading import NodeDataLoader , MultiLayerNeighborSampler
         self.eval()
@@ -119,12 +119,14 @@ class StochasticGCMC(GeneralRecommender):
             'num_workers' : 6,
         }
         dataloader = NodeDataLoader(g,th.arange(g.number_of_nodes()), sampler,**kwargs)
+        if verbose:
+            dataloader = tqdm(dataloader)
 
         x = self.cpu_graph.ndata['fts'].to(commons.device)
         x = th.cat((self.W1(x[:self.num_users]), self.W2(x[self.num_users:])), dim=0)
 
         # Within a layer, iterate over nodes in batches
-        for input_nodes, output_nodes, blocks in tqdm(dataloader):
+        for input_nodes, output_nodes, blocks in dataloader:
             block = blocks[0].to(commons.device)
             h = self.forward_block(block , x[input_nodes])
             self.check_point[output_nodes] = h

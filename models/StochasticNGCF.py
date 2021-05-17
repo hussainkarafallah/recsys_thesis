@@ -160,7 +160,9 @@ class StochasticNGCF(GeneralRecommender):
 
         dataloader = NodeDataLoader(g, th.arange(g.number_of_nodes()), sampler, **kwargs)
         # Within a layer, iterate over nodes in batches
-        for input_nodes, output_nodes, blocks in tqdm(dataloader):
+        if verbose:
+            dataloader = tqdm(dataloader)
+        for input_nodes, output_nodes, blocks in dataloader:
             blocks = [ x.to(commons.device) for x in blocks ]
             users = th.arange(output_nodes.shape[0]).long().to(self.device)
             d1 = th.zeros((0,)).long().to(self.device)
