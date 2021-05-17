@@ -131,7 +131,8 @@ class StochasticGCMC(GeneralRecommender):
             h = self.forward_block(block , x[input_nodes])
             self.check_point[output_nodes] = h
 
-        print('Inference Done Successfully')
+        if verbose:
+            print('Inference Done Successfully')
 
 
 class DenseBiDecoder(nn.Module):

@@ -51,12 +51,16 @@ class StochasticTrainer(Trainer):
                                       worker_init_fn=commons.seed_worker, num_workers=commons.workers)
 
 
-    def _train_epoch(self, train_data, epoch_idx, **kwargs):
+    def _train_epoch(self, train_data, epoch_idx, show_progress=False , **kwargs):
         self.model.train()
         self.init_train_loader(train_data)
         total_loss = 0.
         iterations = 0
-        for x in tqdm(self.train_loader):
+
+        train_iterator = self.train_loader
+        if show_progress:
+            train_iterator = tqdm(train_iterator)
+        for x in train_iterator:
             iterations += 1
             users , pos , neg , blocks = x
             blocks = [x.to(commons.device) for x in blocks]

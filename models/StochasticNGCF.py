@@ -169,8 +169,8 @@ class StochasticNGCF(GeneralRecommender):
             d2 = th.zeros((0,)).long().to(self.device)
             h = self.forward_blocks(blocks , users , d1 , d2)[0]
             self.check_point[output_nodes] = h
-
-        print('Inference Done Successfully')
+        if verbose:
+            print('Inference Done Successfully')
 
     def full_sort_predict(self, interaction):
         user = interaction[self.USER_ID]
