@@ -113,7 +113,7 @@ class StochasticNGCF(GeneralRecommender):
             x.reset_parameters()
 
     def forward_blocks(self, blocks , users, pos_items, neg_items):
-        assert len(blocks) == len(self.layers)
+        assert len(blocks) == len(self.layers) , "{} , {}".format(blocks , self.layers)
         x = self.embedding(blocks[0].srcdata['_ID'])
         all_embeddings = [x]
         for k , (block , ngcf) in enumerate(zip(blocks , self.layers)):

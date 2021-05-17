@@ -16,7 +16,7 @@ class StochasticTrainer(Trainer):
         super(StochasticTrainer, self).__init__(config, model)
         self.graph = model.cpu_graph
         self.num_users = self.model.num_users
-        self.fans = config['fans']
+        self.fans = model.fans
         assert len(self.fans) == model.num_layers
 
         self.train_loader = None
