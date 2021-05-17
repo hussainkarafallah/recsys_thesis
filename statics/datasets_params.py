@@ -37,7 +37,7 @@ datasets_params = {
         'min_item_inter_num' : 5,
         'eval_setting': 'RO_RS,full',
         'metrics' : ['Recall', 'NDCG', 'Hit', 'Precision'],
-        'topk': 20,
+        'topk': 10,
         'valid_metric' : 'Recall@20',
         "split_ratio" : [0.6,0.2,0.2],
         'eval_batch_size' : 1000000,
