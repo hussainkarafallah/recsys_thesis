@@ -23,13 +23,15 @@ class StochasticTrainer(Trainer):
         self.val_loader = None
         self.sampler = MultiLayerNeighborSampler(self.fans)
         self.collator = NodeCollator(self.graph , self.graph.nodes() , self.sampler)
+        self.ITEM_ID = model.ITEM_ID
+        self.NEG_ITEM_ID = model.NEG_ITEM_ID
 
 
     def collate_fn(self , interaction):
         users_orig = interaction['user_id']
-        pos_orig = interaction['item_id'] + self.num_users
+        pos_orig = interaction[self.ITEM_ID] + self.num_users
         try:
-            neg_orig = interaction['neg_item_id'] + self.num_users
+            neg_orig = interaction[self.NEG_ITEM_ID] + self.num_users
         except Exception:
             neg_orig = th.zeros((0,))
 

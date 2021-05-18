@@ -38,7 +38,7 @@ datasets_params = {
         'eval_setting': 'RO_RS,full',
         'metrics' : ['Recall', 'NDCG', 'Hit', 'Precision'],
         'topk': 10,
-        'valid_metric' : 'Recall@20',
+        'valid_metric' : 'Recall@10',
         "split_ratio" : [0.6,0.2,0.2],
         'eval_batch_size' : 1000000,
         'ITEM_ID_FIELD': 'artist_id',
