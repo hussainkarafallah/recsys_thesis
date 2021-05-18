@@ -8,7 +8,10 @@ recbole_models = {
     'BPR',
     'GCMC',
     'NGCF',
-    'ItemKNN'
+    'ItemKNN',
+    'SpectralCF',
+    'LightGCN'
+
 }
 
 model_name_map = {
@@ -22,7 +25,8 @@ model_name_map = {
     'BPR' : BPR,
     'Pop' : Pop,
     'ItemKNN' : ItemKNN,
-    'LightGCN' : LightGCN
+    'LightGCN' : LightGCN,
+    'SpectralCF' : SpectralCF
 }
 
 trainers = {
@@ -30,5 +34,6 @@ trainers = {
     'ExtendedDeepWalk' : Trainer,
     'StochasticGCMC' : StochasticTrainer,
     'StochasticNGCF' : StochasticTrainer,
-    'LightGCN' : Trainer
+    'LightGCN' : Trainer,
+    'SpectralCF': Trainer
 }
