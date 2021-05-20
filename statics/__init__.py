@@ -10,7 +10,8 @@ recbole_models = {
     'NGCF',
     'ItemKNN',
     'SpectralCF',
-    'LightGCN'
+    'LightGCN',
+    'NeuMF'
 
 }
 
@@ -26,7 +27,8 @@ model_name_map = {
     'Pop' : Pop,
     'ItemKNN' : ItemKNN,
     'LightGCN' : LightGCN,
-    'SpectralCF' : SpectralCF
+    'SpectralCF' : SpectralCF,
+    'NeuMF': NeuMF
 }
 
 trainers = {
