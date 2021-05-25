@@ -25,6 +25,7 @@ datasets_params = {
         'min_user_inter_num' : 5,
         'min_item_inter_num' : 5,
         'eval_setting': 'TO_RS,full',
+        'load_col': {'inter': ['user_id', 'item_id', 'timestamp']},
         'metrics' : ['Recall', 'NDCG', 'Hit', 'Precision'],
         'topk': 20,
         'valid_metric' : 'Recall@20',
