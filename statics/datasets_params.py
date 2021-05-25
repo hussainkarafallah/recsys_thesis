@@ -25,12 +25,13 @@ datasets_params = {
         'min_user_inter_num' : 5,
         'min_item_inter_num' : 5,
         'eval_setting': 'TO_RS,full',
-        'load_col': {'inter': ['user_id', 'item_id', 'timestamp']},
+        'load_col': {'inter': ['user_id', 'item_id', 'timestamp' , 'rating']},
         'metrics' : ['Recall', 'NDCG', 'Hit', 'Precision'],
         'topk': 20,
         'valid_metric' : 'Recall@20',
         "split_ratio" : [0.7,0.1,0.2],
-        'eval_batch_size' : 1000000
+        'eval_batch_size' : 1000000,
+        'lowest_val' : { 'rating' : 3 }
     } ,
     'lastfm' : {
         'load_col': {'inter': ['user_id', 'artist_id']},
