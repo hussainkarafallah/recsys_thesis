@@ -2,15 +2,17 @@ from models import *
 import commons , statics
 import argparse , json , os , pandas , logging
 from recbole.config import Config
-from recbole.utils import init_seed , init_logger
 from recbole.data import data_preparation , create_dataset
+from utils.data import add_graph
+from recbole.utils import init_seed , init_logger
+
 import utils
 import torch
 from recbole.utils.utils import set_color
-from utils.data import add_graph
 import gc
+import shutil
 
-def run_trial(model_name , dataset_name , hp_config = None):
+def run_trial(model_name , dataset_name , hp_config = None , save_path = None):
 
     if not hp_config:
         hp_config = {}
@@ -61,6 +63,9 @@ def run_trial(model_name , dataset_name , hp_config = None):
 
     metric = str.lower(config['valid_metric'])
 
+    if save_path:
+        shutil.copyfile(trainer.saved_model_file , save_path)
+
     return {
         'metric' : config['valid_metric'],
         'best_valid_score': best_valid_score,
@@ -73,9 +78,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, action='store', help="model name")
     parser.add_argument("--dataset", type=str, action='store', help="dataset name")
+    parser.add_argument("--save" , action = 'store_true' , help = "saved model path" , default=False)
     args, unknown = parser.parse_known_args()
 
     model_name = args.model
     dataset_name = args.dataset
+    save_path = args.save
 
-    run_trial(model_name , dataset_name)
+    if save_path:
+        save_path = os.path.join("bestmodels" , dataset_name , "{}.pth".format(model_name))
+    else:
+        save_path = None
+
+    run_trial(model_name , dataset_name , save_path = save_path)
