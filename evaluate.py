@@ -12,10 +12,16 @@ from recbole.utils import init_seed , init_logger
 import commons, statics
 from collections import defaultdict , OrderedDict
 import pandas
+import json
 
-global_dict = defaultdict(lambda : OrderedDict)
+global_dict = OrderedDict()
+all_metrics = ['recall' , 'ndcg' , 'precision' , 'hit']
 
 def run_evaluation(model_name , dataset_name , model_path):
+
+    global_dict[model_name] = OrderedDict()
+    for metric in all_metrics:
+        global_dict[model_name][metric] = OrderedDict()
 
     if dataset_name in ['ml-100k' , 'ml-1m']:
         kvals = [10,20,30]
@@ -23,12 +29,12 @@ def run_evaluation(model_name , dataset_name , model_path):
         kvals = [5,10,20]
 
     for K in kvals:
-        cur_record = {}
         commons.init_seeds()
         model_class = statics.model_name_map[model_name]
-
+        model_path = os.path.join("bestmodels" , dataset_name , "{}.pth".format(model_name))
         loaded_file = torch.load(model_path)
         config = loaded_file['config']
+        config['data_path'] = os.path.join('dataset' , dataset_name)
         config['topk'] = K
         config['valid_metric'] = 'Recall@{}'.format(K)
         init_seed(config['seed'], config['reproducibility'])
@@ -48,9 +54,9 @@ def run_evaluation(model_name , dataset_name , model_path):
         trainer = utils.get_trainer(config)(config, model)
 
         test_result = trainer.evaluate(test_data , load_best_model=True , model_file=model_path)
+        for metric in all_metrics:
+            global_dict[model_name][metric][K] = test_result["{}@{}".format(metric , K)]
 
-
-        print(test_result)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -60,5 +66,7 @@ if __name__ == '__main__':
 
     dataset_name = args.dataset
     mpath = args.models_path
-    for model in ['Pop' , 'BPR' , 'ItemKNN' , 'NeuMF' , 'SpectralCF' , 'GCMC' , 'NGCF' , 'LightGCN' ]:
+    for model in ['ItemKNN' , 'BPR' ,  'NeuMF' , 'SpectralCF' , 'GCMC' , 'NGCF' , 'LightGCN' ]:
         run_evaluation(model , dataset_name , model_path = mpath)
+
+    print(json.dumps(global_dict , indent = 2))

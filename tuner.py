@@ -49,6 +49,8 @@ if __name__ == '__main__':
 
     for subset in list(space):
         params = OrderedDict(zip(keys , subset))
+        assert 'topk' in params
+        params['valid_metric'] = 'Recall@{}'.format(params['topk'])
         container = Container(q, target=run_trial, args=(model_name,dataset_name) , kwargs={'hp_config' : params})
         container.start()
         container.join()
@@ -65,6 +67,18 @@ if __name__ == '__main__':
     print("###############################################################################")
     print("Tuning completed successfully")
     print("###############################################################################")
+
+    gs = hp_df.groupby('topk')
+    with open("script_summary" , "a") as f:
+        for kval , df in gs:
+            best = df.iloc[0].to_dict(into = OrderedDict)
+            launch_script = "python3 run.py --model {} --dataset {} ".format(model_name , dataset_name)
+            for p , v in best.items():
+                if p not in ["validation" , "test"]:
+                    launch_script += "--{}={} ".format(p , v)
+            f.write(launch_script + "\n")
+
+        f.write("\n \n ********************* \n \n")
 
 
 

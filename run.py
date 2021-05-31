@@ -12,7 +12,7 @@ from recbole.utils.utils import set_color
 import gc
 import shutil
 
-def run_trial(model_name , dataset_name , hp_config = None , save_path = None):
+def run_trial(model_name , dataset_name , hp_config = None , save_flag = False):
 
     if not hp_config:
         hp_config = {}
@@ -63,6 +63,12 @@ def run_trial(model_name , dataset_name , hp_config = None , save_path = None):
 
     metric = str.lower(config['valid_metric'])
 
+    if save_flag:
+        os.makedirs(os.path.join("bestmodels" , dataset_name , str(config["topk"])))
+        save_path = os.path.join("bestmodels" , dataset_name , str(config["topk"]) , "{}.pth".format(model_name))
+    else:
+        save_path = None
+
     if save_path:
         shutil.copyfile(trainer.saved_model_file , save_path)
 
@@ -83,11 +89,6 @@ if __name__ == '__main__':
 
     model_name = args.model
     dataset_name = args.dataset
-    save_path = args.save
+    save_flag= args.save
 
-    if save_path:
-        save_path = os.path.join("bestmodels" , dataset_name , "{}.pth".format(model_name))
-    else:
-        save_path = None
-
-    run_trial(model_name , dataset_name , save_path = save_path)
+    run_trial(model_name , dataset_name , save_flag = save_flag)
