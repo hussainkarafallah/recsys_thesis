@@ -76,6 +76,7 @@ if __name__ == '__main__':
             for p , v in best.items():
                 if p not in ["validation" , "test"]:
                     launch_script += "--{}={} ".format(p , v)
+                launch_script += "--save "
             f.write(launch_script + "\n")
 
         f.write("\n \n ********************* \n \n")

@@ -1,21 +1,71 @@
 import os , argparse , logging
 import utils
 import torch
-from recbole.utils import ensure_dir, get_local_time, early_stopping, calculate_valid_score, dict2str, \
-    DataLoaderType, KGDataLoaderState
-from tqdm import tqdm
-from recbole.utils.utils import set_color
-from recbole.config import Config
+from recbole.utils import DataLoaderType
 from recbole.data import data_preparation , create_dataset
 from utils.data import add_graph
 from recbole.utils import init_seed , init_logger
 import commons, statics
 from collections import defaultdict , OrderedDict
 import pandas
+from recbole.evaluator import TopKEvaluator
 import json
-
+import numpy as np
 global_dict = OrderedDict()
-all_metrics = ['recall' , 'ndcg' , 'precision' , 'hit']
+all_metrics = ['recall' , 'ndcg' , 'precision' , 'hit' , 'novelty']
+
+class CustomEvaluator(TopKEvaluator):
+    def __init__(self, proxy , config, metrics):
+        super().__init__(config, metrics)
+        self.proxy = proxy
+
+    def get_topk(self, batch_matrix_list, eval_data):
+
+        pos_len_list = eval_data.get_pos_len_list()
+        batch_result = torch.cat(batch_matrix_list, dim=0).cpu().numpy()
+
+        # unpack top_idx and shape_matrix
+        topk_idx = batch_result[:, :-1]
+        shapes = batch_result[:, -1]
+
+        assert len(pos_len_list) == len(topk_idx)
+        return topk_idx
+
+    def div_nov(self , num_users , num_items , item_degrees , eval_data):
+        proxy = self.proxy
+        if eval_data.dl_type == DataLoaderType.FULL:
+            if proxy.item_tensor is None:
+                proxy.item_tensor = eval_data.get_item_feature().to(proxy.device).repeat(eval_data.step)
+            proxy.tot_item_num = eval_data.dataset.item_num
+
+        batch_matrix_list = []
+        iter_data = enumerate(eval_data)
+
+        nov_vals = []
+
+        for batch_idx, batched_data in iter_data:
+            interaction, scores = proxy._full_sort_batch_eval(batched_data)
+            batch_matrix = self.collect(interaction, scores)
+            batch_matrix_list.append(batch_matrix)
+
+        topk = self.get_topk(batch_matrix_list, eval_data)
+        degs = item_degrees.numpy()
+
+        assert degs.shape[0] == num_items
+
+
+        for i , subtensor in enumerate(topk):
+            cc = []
+            for x in subtensor:
+                if degs[x] == 0:
+                    continue
+                val = np.log2( degs[x] / num_users )
+                cc.append(val)
+            if cc:
+                nov_vals.append(- np.mean(cc))
+
+        return np.mean(nov_vals)
+
 
 def run_evaluation(model_name , dataset_name , model_path):
 
@@ -28,8 +78,12 @@ def run_evaluation(model_name , dataset_name , model_path):
     else:
         kvals = [5,10,20]
 
+    dataset_initialized = False
+
     for K in kvals:
+
         commons.init_seeds()
+
         model_class = statics.model_name_map[model_name]
         model_path = os.path.join("bestmodels" , dataset_name , "{}.pth".format(model_name))
         loaded_file = torch.load(model_path)
@@ -43,19 +97,26 @@ def run_evaluation(model_name , dataset_name , model_path):
         init_logger(config)
         logger = logging.getLogger()
 
-
-        # dataset filtering
-        dataset = create_dataset(config)
-        train_data, valid_data, test_data = data_preparation(config, dataset)
-        train_data = add_graph(train_data)
+        if not dataset_initialized:
+            # dataset filtering
+            dataset = create_dataset(config)
+            train_data, valid_data, test_data = data_preparation(config, dataset)
+            train_data = add_graph(train_data)
+            item_degrees = train_data.graph.in_degrees()[train_data.num_users : ]
+            dataset_initialized = True
 
 
         model = model_class(config, train_data).to(commons.device)
         trainer = utils.get_trainer(config)(config, model)
 
         test_result = trainer.evaluate(test_data , load_best_model=True , model_file=model_path)
+        custom_evaluator = CustomEvaluator(trainer , config , config['metrics'])
+        novelty = custom_evaluator.div_nov(train_data.num_users , train_data.num_items , item_degrees , test_data)
+
         for metric in all_metrics:
-            global_dict[model_name][metric][K] = test_result["{}@{}".format(metric , K)]
+            if metric not in ['novelty' , 'diversity']:
+                global_dict[model_name][metric][K] = test_result["{}@{}".format(metric , K)]
+        global_dict[model_name]['novelty'][K] = novelty
 
 
 if __name__ == '__main__':
@@ -66,7 +127,8 @@ if __name__ == '__main__':
 
     dataset_name = args.dataset
     mpath = args.models_path
-    for model in ['ItemKNN' , 'BPR' ,  'NeuMF' , 'SpectralCF' , 'GCMC' , 'NGCF' , 'LightGCN' ]:
+    for model in ['LightGCN']: # ['ItemKNN' , 'BPR' ,  'NeuMF' , 'SpectralCF' , 'GCMC' , 'NGCF' , 'LightGCN' ]:
         run_evaluation(model , dataset_name , model_path = mpath)
 
     print(json.dumps(global_dict , indent = 2))
+    # ['ItemKNN']: #
