@@ -109,6 +109,7 @@ def run_evaluation(model_name , dataset_name , model_path):
         config['data_path'] = os.path.join('dataset' , dataset_name)
         config['topk'] = K
         config['valid_metric'] = 'Recall@{}'.format(K)
+        config['eval_batch_size'] = 500000
         init_seed(config['seed'], config['reproducibility'])
 
 
