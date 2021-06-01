@@ -1,18 +1,3 @@
-# -*- coding: utf-8 -*-
-# @Time   : 2020/10/2
-# @Author : Changxin Tian
-# @Email  : cx.tian@outlook.com
-
-"""
-SpectralCF
-################################################
-
-Reference:
-    Lei Zheng et al. "Spectral collaborative filtering." in RecSys 2018.
-
-Reference code:
-    https://github.com/lzheng21/SpectralCF
-"""
 
 import numpy as np
 import scipy.sparse as sp
