@@ -75,8 +75,7 @@ if __name__ == '__main__':
             launch_script = "python3 run.py --model {} --dataset {} ".format(model_name , dataset_name)
             for p , v in best.items():
                 if p not in ["validation" , "test"]:
-                    launch_script += "--{}={} ".format(p , v)
-                launch_script += "--save "
+                    launch_script += "--{}={} --save".format(p , v)
             f.write(launch_script + "\n")
 
         f.write("\n \n ********************* \n \n")
