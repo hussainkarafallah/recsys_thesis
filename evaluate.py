@@ -75,7 +75,7 @@ class CustomEvaluator(TopKEvaluator):
             if cc:
                 div_vals.append(np.mean(cc))
 
-        return np.mean(nov_vals) ,  - np.median(div_vals)
+        return np.mean(nov_vals) ,  - np.mean(div_vals)
 
 
 def construct_sets(train_data):
@@ -152,9 +152,13 @@ if __name__ == '__main__':
 
     dataset_name = args.dataset
     mpath = args.models_path
-    for model in ['ItemKNN' , 'BPR' ,  'NeuMF' , 'SpectralCF' , 'GCMC' , 'NGCF' , 'LightGCN' ]:
+    for model in ['ItemKNN' , 'BPR',  'NeuMF' , 'SpectralCF' , 'GCMC' , 'NGCF' , 'LightGCN']:
         run_evaluation(model , dataset_name , model_path = mpath)
 
-    with open(args.out , 'w') as f:
-       json.dump(global_dict , f, indent = 2)
+    if args.out:
+        with open(args.out , 'w') as f:
+            json.dump(global_dict , f, indent = 2)
+    else:
+        print(json.dumps(global_dict, indent=2))
+
     # ['ItemKNN']: #
