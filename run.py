@@ -64,7 +64,7 @@ def run_trial(model_name , dataset_name , hp_config = None , save_flag = False):
     metric = str.lower(config['valid_metric'])
 
     if save_flag:
-        os.makedirs(os.path.join("bestmodels" , dataset_name , str(config["topk"])))
+        os.makedirs(os.path.join("bestmodels" , dataset_name , str(config["topk"])) , exist_ok=True)
         save_path = os.path.join("bestmodels" , dataset_name , str(config["topk"]) , "{}.pth".format(model_name))
     else:
         save_path = None

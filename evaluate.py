@@ -73,10 +73,7 @@ def run_evaluation(model_name , dataset_name , model_path):
     for metric in all_metrics:
         global_dict[model_name][metric] = OrderedDict()
 
-    if dataset_name in ['ml-100k' , 'ml-1m']:
-        kvals = [10,20,30]
-    else:
-        kvals = [5,10,20]
+    kvals = [10,20,30]
 
     dataset_initialized = False
 
@@ -85,7 +82,7 @@ def run_evaluation(model_name , dataset_name , model_path):
         commons.init_seeds()
 
         model_class = statics.model_name_map[model_name]
-        model_path = os.path.join("bestmodels" , dataset_name , "{}.pth".format(model_name))
+        model_path = os.path.join("bestmodels" , dataset_name , str(K) , "{}.pth".format(model_name))
         loaded_file = torch.load(model_path)
         config = loaded_file['config']
         config['data_path'] = os.path.join('dataset' , dataset_name)
@@ -121,13 +118,13 @@ def run_evaluation(model_name , dataset_name , model_path):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, action='store', help="dataset name")
+    parser.add_argument("--dataset", type=str, action='store', help="dataset name" , required=True)
     parser.add_argument("--models_path" , type = str , action='store' , help = "models_path")
     args, unknown = parser.parse_known_args()
 
     dataset_name = args.dataset
     mpath = args.models_path
-    for model in ['LightGCN']: # ['ItemKNN' , 'BPR' ,  'NeuMF' , 'SpectralCF' , 'GCMC' , 'NGCF' , 'LightGCN' ]:
+    for model in ['ItemKNN']: # ['ItemKNN' , 'BPR' ,  'NeuMF' , 'SpectralCF' , 'GCMC' , 'NGCF' , 'LightGCN' ]:
         run_evaluation(model , dataset_name , model_path = mpath)
 
     print(json.dumps(global_dict , indent = 2))
