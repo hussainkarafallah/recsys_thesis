@@ -71,7 +71,10 @@ class CustomEvaluator(TopKEvaluator):
             cc = []
             subtensor = subtensor.tolist()
             for x , y in itertools.combinations(subtensor , 2):
-                cc.append( len(adjsets[x].intersection(adjsets[y]))  )
+                if len(adjsets[x].union(adjsets[y])) == 0:
+                    cc.append(0)
+                else:
+                    cc.append( -np.log2( 1 + len(adjsets[x].intersection(adjsets[y])) / len(adjsets[x].union(adjsets[y]))  ) )
             if cc:
                 div_vals.append(np.mean(cc))
 
@@ -153,7 +156,9 @@ if __name__ == '__main__':
 
     dataset_name = args.dataset
     mpath = args.models_path
-    for model in ['ItemKNN' , 'BPR',  'NeuMF' , 'SpectralCF' , 'GCMC' , 'NGCF' , 'LightGCN']:
+
+    all_models = ['ItemKNN' , 'BPR',  'NeuMF' , 'SpectralCF' , 'GCMC' , 'NGCF' , 'LightGCN']
+    for model in all_models:
         run_evaluation(model , dataset_name , model_path = mpath)
 
     if args.out:
