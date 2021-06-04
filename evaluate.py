@@ -78,7 +78,7 @@ class CustomEvaluator(TopKEvaluator):
             if cc:
                 div_vals.append(np.mean(cc))
 
-        return np.mean(nov_vals) ,  - np.mean(div_vals)
+        return np.mean(nov_vals) ,  np.mean(div_vals)
 
 
 def construct_sets(train_data):
