@@ -6,4 +6,5 @@ from .LightGCN import LightGCN
 from .StochasticGCMC import StochasticGCMC
 from .StochasticNGCF import StochasticNGCF
 from .SpectralCF import SpectralCF
+from .StochasticLightGCN import StochasticLGCN
 from recbole.model.general_recommender import BPR , Pop , ItemKNN , NeuMF

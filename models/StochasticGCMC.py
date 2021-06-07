@@ -38,7 +38,7 @@ class StochasticGCMC(GeneralRecommender):
         self.num_users = dataset.num_users
         self.num_items = dataset.num_items
         self.cpu_graph = dataset.graph
-        self.cpu_graph.ndata['fts'] = th.eye(self.cpu_graph.num_nodes())
+        self.embedding = th.nn.Embedding(self.cpu_graph.number_of_nodes() , gcn_output_dim)
         self.check_point = th.zeros( (self.cpu_graph.number_of_nodes() , embedding_size)).to(commons.device)
 
 
@@ -47,9 +47,8 @@ class StochasticGCMC(GeneralRecommender):
         self.loss = nn.CrossEntropyLoss()
 
         # parameters initialization
-        self.W1 = nn.Linear(self.cpu_graph.num_nodes() , gcn_output_dim)
-        self.W2 = nn.Linear(self.cpu_graph.num_nodes() , gcn_output_dim)
-        self.W_glob = nn.Linear(gcn_output_dim , embedding_size)
+        self.W1 = nn.Linear(gcn_output_dim , embedding_size)
+        self.W2 = nn.Linear(gcn_output_dim , embedding_size)
         self.decoder = DenseBiDecoder(embedding_size , 2)
         self.reset_parameters()
 
@@ -57,7 +56,7 @@ class StochasticGCMC(GeneralRecommender):
         from torch.nn.init import xavier_uniform_
         xavier_uniform_(self.W1.weight)
         xavier_uniform_(self.W2.weight)
-        xavier_uniform_(self.W_glob.weight)
+        xavier_uniform_(self.embedding.weight)
         self.decoder.reset_parameters()
 
     @staticmethod
@@ -71,7 +70,6 @@ class StochasticGCMC(GeneralRecommender):
             block.srcdata['x'] = self.node_dropout(h)
             block.update_all(self.msg , gF.sum('m' , 'y'))
             x = thF.relu(block.dstdata['y'])
-            x = thF.relu(self.W_glob(x))
             x = self.dense_dropout(x)
             return x
 
@@ -79,7 +77,9 @@ class StochasticGCMC(GeneralRecommender):
     def forward(self , batch):
         users, pos, neg, blocks = batch
         split = users.max() + 1
-        h = th.cat((self.W1(blocks[0].srcdata['fts'][:split]), self.W2(blocks[0].srcdata['fts'][split:])), dim=0)
+        h_users = self.W1(self.embedding(blocks[0].srcdata['_ID'][:split]))
+        h_items = self.W2(self.embedding(blocks[0].srcdata['_ID'][split:]))
+        h = th.cat((h_users , h_items) , dim = 0)
         for block in blocks:
             h = self.forward_block(block, h)
 
@@ -122,8 +122,9 @@ class StochasticGCMC(GeneralRecommender):
         if verbose:
             dataloader = tqdm(dataloader)
 
-        x = self.cpu_graph.ndata['fts'].to(commons.device)
+        x = self.embedding.weight
         x = th.cat((self.W1(x[:self.num_users]), self.W2(x[self.num_users:])), dim=0)
+
 
         # Within a layer, iterate over nodes in batches
         for input_nodes, output_nodes, blocks in dataloader:

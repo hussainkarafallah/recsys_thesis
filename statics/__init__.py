@@ -28,7 +28,8 @@ model_name_map = {
     'ItemKNN' : ItemKNN,
     'LightGCN' : LightGCN,
     'SpectralCF' : SpectralCF,
-    'NeuMF': NeuMF
+    'NeuMF': NeuMF,
+    'S-LightGCN' : StochasticLGCN
 }
 
 trainers = {
@@ -37,5 +38,6 @@ trainers = {
     'StochasticGCMC' : StochasticTrainer,
     'StochasticNGCF' : StochasticTrainer,
     'LightGCN' : Trainer,
-    'SpectralCF': Trainer
+    'SpectralCF': Trainer,
+    'StochasticLGCN' : StochasticTrainer
 }
